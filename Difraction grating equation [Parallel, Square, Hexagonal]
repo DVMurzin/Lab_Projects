@@ -1,0 +1,98 @@
+# -*- coding: utf-8 -*-
+"""
+The code is made to calculate wavelengths (l) at which the diffracion of light occures in 1D or 2D gratings. 
+
+"""
+import sympy as sp
+import numpy as np
+from datetime import datetime
+
+#define symbols
+d1, d2, m, l, t, f, n, t_val = sp.symbols('d1 d2 m l t f n t_val')
+
+# file name generation
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+filename = f"output_{timestamp}.txt"
+
+#enter the data
+lattice_type = int(input("Choose lattice type: Parallel (1), Square (2), Hexagonal (3): "))
+d1_val = float(input("Period along first direction (nm): "))
+
+
+with open(filename, 'w') as file:
+    file.write("Angle(deg) -Lambda(nm) +Lambda(nm)\n")
+    
+    if lattice_type == 1:
+        eq = (((2*sp.pi/l)*sp.sin(t*sp.pi/180)*sp.cos(f*sp.pi/180))+(2*sp.pi*m/d1))**2-(2*sp.pi/l)**2
+        
+        m_val = int(input("Diffraction order: "))
+        t_start = int(input("Start angle of light incidence (deg): "))
+        t_end = int(input("End angle of light incidence (deg): "))
+        t_step = float(input("Calculation step (deg): "))
+        f_val = float(input("Azimuthal angle (deg) [0 if not applicable]: "))
+        
+        t_val_list=np.arange(t_start, t_end, t_step, dtype=float)
+        solutions_neg = []
+        solutions_pos = []
+        
+        for t_val in t_val_list:
+            solution = sp.solve(eq.subs({t: t_val, f: f_val, m: m_val, d1: d1_val}), l)
+            solutions_neg.append(abs(solution[0]))
+            solutions_pos.append(abs(solution[1]))
+            
+        for i, t_val in enumerate(t_val_list):
+            print(f"t = {t_val}(deg), lambda(-) = {solutions_neg[i].evalf()}(nm), lambda(+) = {solutions_pos[i].evalf()}(nm)")
+            file.write(f"{t_val} {solutions_neg[i]} {solutions_pos[i]}\n")
+            
+    elif lattice_type == 2:
+        eq = (((2*sp.pi/l)*sp.sin(t*sp.pi/180)*sp.cos(f*sp.pi/180))+(2*sp.pi*m/d1))**2+(((2*sp.pi/l)*sp.sin(t*sp.pi/180)*sp.sin(f*sp.pi/180))+(2*sp.pi*n/d2))**2-(2*sp.pi/l)**2
+        
+        d2_val = float(input("Period along second direction (nm): "))
+        m_val = int(input("Diffraction order for first direction: "))
+        f_val = float(input("Azimuthal angle (deg) [0 if not applicable]: "))
+        n_val = int(input("Diffraction order for second direction: "))
+        t_start = int(input("Start angle of light incidence (deg): "))
+        t_end = int(input("End angle of light incidence (deg): "))
+        t_step = float(input("Calculation step (deg): "))
+        
+        t_val_list=np.arange(t_start, t_end, t_step, dtype=float)
+        solutions_neg = []
+        solutions_pos = []
+        
+        for t_val in t_val_list:
+            solution = sp.solve(eq.subs({t: t_val, f: f_val, m: m_val, d1: d1_val, d1: d1_val, n: n_val}), l)
+            solutions_neg.append(abs(solution[0]))
+            solutions_pos.append(abs(solution[1]))
+            
+        for i, t_val in enumerate(t_val_list):
+            print(f"t = {t_val}(deg), lambda(-) = {solutions_neg[i].evalf()}(nm), lambda(+) = {solutions_pos[i].evalf()}(nm)")
+            file.write(f"{t_val} {solutions_neg[i]} {solutions_pos[i]}\n")  
+            
+    elif lattice_type == 3:
+        eq = (((2*sp.pi/l)*sp.sin(t*sp.pi/180)*sp.cos(f*sp.pi/180))+(2*sp.pi*m/d1))**2+(((2*sp.pi/l)*sp.sin(t*sp.pi/180)*sp.sin(f*sp.pi/180))+(2*sp.pi*(-m+(2*n))/(sp.sqrt(3)*d2)))**2-(2*sp.pi/l)**2
+       
+        d2_val = float(input("Period along second direction (nm): "))
+        m_val = int(input("Diffraction order for first direction: "))
+        f_val = float(input("Azimuthal angle (deg) [0 if not applicable]: "))
+        n_val = int(input("Diffraction order for second direction: "))
+        t_start = int(input("Start angle of light incidence (deg): "))
+        t_end = int(input("End angle of light incidence (deg): "))
+        t_step = float(input("Calculation step (deg): "))
+        
+        t_val_list=np.arange(t_start, t_end, t_step, dtype=float)
+        solutions_neg = []
+        solutions_pos = []        
+        
+        for t_val in t_val_list:
+            solution = sp.solve(eq.subs({t: t_val, f: f_val, m: m_val, d1: d1_val, d2: d2_val, n: n_val}), l)
+            solutions_neg.append(abs(solution[0]))
+            solutions_pos.append(abs(solution[1]))
+            
+        for i, t_val in enumerate(t_val_list):
+            print(f"t = {t_val}(deg), lambda(-) = {solutions_neg[i].evalf()}(nm), lambda(+) = {solutions_pos[i].evalf()}(nm)")
+            file.write(f"{t_val} {solutions_neg[i]} {solutions_pos[i]}\n")  
+    else:
+        print("Invalid dimension input. Please enter 1, 2, or 3.")
+
+        
+
